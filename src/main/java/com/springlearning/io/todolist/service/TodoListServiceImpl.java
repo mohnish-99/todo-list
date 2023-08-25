@@ -32,7 +32,16 @@ public class TodoListServiceImpl implements TodoListService{
 
     @Override
     public Task updateTask(Task task) {
-        return tRepository.save(task);
+        String taskName = task.getName();
+        Task newTask =  new Task();
+        Optional<Task> optionalExistingTask =  tRepository.findByName(taskName);
+        if(optionalExistingTask.isPresent()){
+            Task existingTask = optionalExistingTask.get();
+            newTask.setId(existingTask.getId());
+            newTask.setName(existingTask.getName());
+            newTask.setDescription(existingTask.getDescription());
+        }
+        return tRepository.save(newTask);
     }
 
     @Override
