@@ -5,11 +5,17 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import com.springlearning.io.todolist.entity.Task;
+import com.springlearning.io.todolist.exception.MethodArgumentNotValidException;
+import com.springlearning.io.todolist.exception.ResourceAlreadyPresentException;
 import com.springlearning.io.todolist.repository.TodoRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class TodoListServiceImpl implements TodoListService{
 
     @Autowired
@@ -27,21 +33,38 @@ public class TodoListServiceImpl implements TodoListService{
 
     @Override
     public Task saveTask(Task task) {
+        if(ObjectUtils.isEmpty(task.getName())|| ObjectUtils.isEmpty(task.getDescription())){
+            throw new MethodArgumentNotValidException("Name or Description cannot be null or Empty");
+        }
+        boolean iFTaskExists = checkIfATaskExists(task);
+        if(iFTaskExists){
+            log.info("Task already exists with the given name");
+            throw new ResourceAlreadyPresentException("Task already exists with the given name");
+        }
         return tRepository.save(task);
+    }
+
+    private boolean checkIfATaskExists(Task task) {
+        String taskName = task.getName();
+        tRepository.findByName(taskName);
+        return tRepository.findByName(taskName).isPresent();
     }
 
     @Override
     public Task updateTask(Task task) {
+        if(ObjectUtils.isEmpty(task.getName())|| ObjectUtils.isEmpty(task.getDescription())){
+            throw new MethodArgumentNotValidException("Name or Description cannot be null or Empty");
+        }
         String taskName = task.getName();
         Task newTask =  new Task();
         Optional<Task> optionalExistingTask =  tRepository.findByName(taskName);
-        if(optionalExistingTask.isPresent()){
-            Task existingTask = optionalExistingTask.get();
-            newTask.setId(existingTask.getId());
-            newTask.setName(existingTask.getName());
-            newTask.setDescription(existingTask.getDescription());
+        if(!optionalExistingTask.isPresent()){
+            return tRepository.save(task);
         }
-        return tRepository.save(newTask);
+        Task existingTask = optionalExistingTask.get();
+            existingTask.setDescription(task.getDescription());
+        
+        return tRepository.save(existingTask);
     }
 
     @Override

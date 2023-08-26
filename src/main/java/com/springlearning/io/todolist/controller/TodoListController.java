@@ -3,6 +3,7 @@ package com.springlearning.io.todolist.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.springlearning.io.todolist.entity.Task;
 import com.springlearning.io.todolist.exception.ResourceNotFoundException;
 import com.springlearning.io.todolist.service.TodoListService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/tasks")
@@ -33,13 +36,14 @@ public class TodoListController {
     }
 
     @PostMapping
-    public Task saveTask(@RequestBody Task task){
-        return todoListService.saveTask(task);
+    public ResponseEntity<Object> saveTask(@RequestBody @Valid Task task){
+        return ResponseEntity.ok().body(todoListService.saveTask(task));
+        
     }
 
     @PutMapping
-    public Task updateTask(@RequestBody Task task){
-        return todoListService.updateTask(task);
+   public ResponseEntity<Object> updateTask(@RequestBody @Valid Task task){
+        return ResponseEntity.ok().body(todoListService.updateTask(task));
     }
 
     @DeleteMapping("/{id}")
