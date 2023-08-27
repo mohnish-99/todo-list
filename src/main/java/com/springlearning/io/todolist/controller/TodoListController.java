@@ -22,12 +22,15 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/tasks")
 public class TodoListController {
-    @Autowired
+    
     private TodoListService todoListService;
-
+    
+    TodoListController(TodoListService todoListService){
+        this.todoListService = todoListService;
+    }
     @GetMapping("/{id}")
     public Task getTaskById(@PathVariable Long id){
-       return todoListService.getTaskById(id).orElseThrow(ResourceNotFoundException::new);
+       return todoListService.getTaskById(id).orElseThrow(() -> new ResourceNotFoundException("Task with id : "+id + " not found"));
     }
 
     @GetMapping
