@@ -1,21 +1,18 @@
-package com.springlearning.io.todolist.controller;
+package com.springlearning.io.todolist.exception;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler;
 
-import com.springlearning.io.todolist.exception.MethodArgumentNotValidException;
-import com.springlearning.io.todolist.exception.ResourceAlreadyPresentException;
-import com.springlearning.io.todolist.exception.ResourceNotFoundException;
+import com.springlearning.io.todolist.model.ErrorMessage;
 
 @RestControllerAdvice
 public class TodoContollerAdvise extends ResponseEntityExceptionHandler{
@@ -46,31 +43,25 @@ public class TodoContollerAdvise extends ResponseEntityExceptionHandler{
     
     }
 
-    @ExceptionHandler(value = ResourceAlreadyPresentException.class)
-    //@ResponseStatus(value = HttpStatus.NOT_FOUND)
-    public Map<String,Object> handleDuplicateDataException(ResourceAlreadyPresentException ex, WebRequest req){
-
-        Map<String,Object> errorMap = new HashMap<>();
-        errorMap.put("status", HttpStatus.CONFLICT);
-        errorMap.put("cause", "ResourceAlreadyPresentException");
-        errorMap.put("message", ex.getMessage());
-        //errorMap.put("exception", ex.getStackTrace());
-        
-        return errorMap;
+    @ExceptionHandler(ResourceAlreadyPresentException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorMessage handleDuplicateDataException(ResourceAlreadyPresentException ex, WebRequest req){
+        return ErrorMessage.builder()
+                            .httpStatus(HttpStatus.CONFLICT)
+                            .message(ex.getMessage())
+                            .build();
     
     }
 
     @ExceptionHandler(value = Exception.class)
-    //@ResponseStatus(value = HttpStatus.NOT_FOUND)
-    public Map<String,Object> handleException(Exception ex){
-
-        Map<String,Object> errorMap = new HashMap<>();
-       
-        errorMap.put("cause", ex.getCause());
-        errorMap.put("message", ex.getMessage());
-        errorMap.put("exception", ex.getStackTrace());
-        
-        return errorMap;
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorMessage handleException(Exception ex){
+        return ErrorMessage.builder()
+                            .httpStatus(HttpStatus.NOT_FOUND)
+                            .message(ex.getMessage())
+                            .build();
     
     }
 }
